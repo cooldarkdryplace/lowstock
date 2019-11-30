@@ -184,7 +184,14 @@ func (ls *LowStock) DoStart(ctx context.Context, msgUpdate MessengerUpdate) erro
 		return err
 	}
 
-	if err := ls.messenger.SendLoginURL("Disclaimer...", uri, msgUpdate.ChatID); err != nil {
+	msg := `Welcome to the Lowstock!  
+This bot keeps track of your Etsy listings and informs you when listing is sold-out.  
+Before you will start getting notifications you need to login.  
+This application will request *read-only access* to your basic shop information and your listings.  
+  
+The term 'Etsy' is a trademark of Etsy, Inc. This application uses the Etsy API but is not endorsed or certified by Etsy, Inc.`
+
+	if err := ls.messenger.SendLoginURL(msg, uri, msgUpdate.ChatID); err != nil {
 		return err
 	}
 
@@ -196,7 +203,10 @@ func (ls *LowStock) DoStart(ctx context.Context, msgUpdate MessengerUpdate) erro
 }
 
 func (ls *LowStock) DoHelp(ctx context.Context, msgUpdate MessengerUpdate) error {
-	msg := "Supported commands: /start /pin /help"
+	msg := `Supported commands:  
+	/start - Login to your Etsy shop  
+	/pin   - Submit Pin  
+	/help  - Send this message`
 
 	if err := ls.messenger.SendTextMessage(msg, msgUpdate.ChatID); err != nil {
 		fmt.Errorf("failed to send help instructions: %w", err)
