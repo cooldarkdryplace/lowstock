@@ -104,7 +104,7 @@ func (e *EtsyClient) UserID(accessToken, accessSecret string) (int64, error) {
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return 0, fmt.Errorf("failed to read response body: %s", err)
+			return 0, fmt.Errorf("failed to read response body: %w", err)
 		}
 
 		return 0, fmt.Errorf("bad response: %s, body: %s", resp.Status, string(body))
@@ -203,7 +203,7 @@ func (e *EtsyClient) Updates(ctx context.Context) ([]lowstock.Update, error) {
 	resp, err := http.DefaultClient.Get("https://api.etsy.com/v2/feeds/listings/latest?" + params.Encode())
 	if err != nil {
 		feedFailureCounter.Inc()
-		return nil, fmt.Errorf("failed to perform call to Etsy feeds: %s", err)
+		return nil, fmt.Errorf("failed to perform call to Etsy feeds: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -211,7 +211,7 @@ func (e *EtsyClient) Updates(ctx context.Context) ([]lowstock.Update, error) {
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read response body: %s", err)
+			return nil, fmt.Errorf("failed to read response body: %w", err)
 		}
 
 		return nil, fmt.Errorf("bad response: %s, body: %s", resp.Status, string(body))
@@ -221,7 +221,7 @@ func (e *EtsyClient) Updates(ctx context.Context) ([]lowstock.Update, error) {
 
 	if err := json.NewDecoder(resp.Body).Decode(&lResp); err != nil {
 		feedFailureCounter.Inc()
-		return nil, fmt.Errorf("failed to decode feeds response: %s", err)
+		return nil, fmt.Errorf("failed to decode feeds response: %w", err)
 	}
 
 	feedSuccessCounter.Inc()

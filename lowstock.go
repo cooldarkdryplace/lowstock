@@ -121,14 +121,14 @@ func (ls *LowStock) HandleEtsyUpdate(ctx context.Context, update Update) error {
 		user, err := ls.storage.User(ctx, update.UserID)
 		if err != nil {
 			if !errors.Is(err, ErrNotFound) {
-				return fmt.Errorf("failed to get User record: %s", err)
+				return fmt.Errorf("failed to get User record: %w", err)
 			}
 			return nil
 		}
 
 		msg := fmt.Sprintf("Low stock for SKU: %v, shop: %s", update.ListingSKUs, update.ShopName)
 		if err := ls.messenger.SendTextMessage(msg, user.ChatID); err != nil {
-			return fmt.Errorf("failed to send message via messenger: %s", err)
+			return fmt.Errorf("failed to send message via messenger: %w", err)
 		}
 	default:
 		// noop
@@ -148,7 +148,7 @@ func (ls *LowStock) DoPin(ctx context.Context, msgUpdate MessengerUpdate) error 
 
 	details, err = ls.etsy.Callback(ctx, pin, details.Token, details.TokenSecret)
 	if err != nil {
-		return fmt.Errorf("failed to handle Etsy OAuth callback: %s", err)
+		return fmt.Errorf("failed to handle Etsy OAuth callback: %w", err)
 	}
 
 	etsyUserID, err := ls.etsy.UserID(details.Token, details.TokenSecret)
@@ -167,12 +167,12 @@ func (ls *LowStock) DoPin(ctx context.Context, msgUpdate MessengerUpdate) error 
 	log.Printf("Saving user: %#v", user)
 
 	if err := ls.storage.SaveUser(ctx, user); err != nil {
-		return fmt.Errorf("Failed to save user details: %s", err)
+		return fmt.Errorf("Failed to save user details: %w", err)
 	}
 
 	msg := "Success! You will be notified when products are sold out."
 	if err := ls.messenger.SendTextMessage(msg, msgUpdate.ChatID); err != nil {
-		return fmt.Errorf("failed to send notification: %s", err)
+		return fmt.Errorf("failed to send notification: %w", err)
 	}
 
 	return nil
@@ -189,7 +189,7 @@ func (ls *LowStock) DoStart(ctx context.Context, msgUpdate MessengerUpdate) erro
 	}
 
 	if err := ls.storage.SaveTokenDetails(ctx, details); err != nil {
-		return fmt.Errorf("failed to save oauth token details: %s", err)
+		return fmt.Errorf("failed to save oauth token details: %w", err)
 	}
 
 	return nil
@@ -199,7 +199,7 @@ func (ls *LowStock) DoHelp(ctx context.Context, msgUpdate MessengerUpdate) error
 	msg := "Supported commands: /start /pin /help"
 
 	if err := ls.messenger.SendTextMessage(msg, msgUpdate.ChatID); err != nil {
-		fmt.Errorf("failed to send help instructions: %s", err)
+		fmt.Errorf("failed to send help instructions: %w", err)
 	}
 
 	return nil

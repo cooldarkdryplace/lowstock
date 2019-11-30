@@ -73,7 +73,7 @@ func (t *Telegram) Updates(lastMsgID int64) ([]lowstock.MessengerUpdate, error) 
 	r, err := http.Get(url)
 	if err != nil {
 		updFailureCounter.Inc()
-		return nil, fmt.Errorf("failed to call API: %s", err)
+		return nil, fmt.Errorf("failed to call API: %w", err)
 	}
 	defer r.Body.Close()
 
@@ -84,7 +84,7 @@ func (t *Telegram) Updates(lastMsgID int64) ([]lowstock.MessengerUpdate, error) 
 
 	if err = json.NewDecoder(r.Body).Decode(apiResponse); err != nil {
 		updFailureCounter.Inc()
-		return nil, fmt.Errorf("failed to unmarshal updates: %s", err)
+		return nil, fmt.Errorf("failed to unmarshal updates: %w", err)
 	}
 
 	updSuccessCounter.Inc()
@@ -113,7 +113,7 @@ type SendMessageRequest struct {
 func (t *Telegram) sendMessage(msg SendMessageRequest) error {
 	data, err := json.Marshal(msg)
 	if err != nil {
-		return fmt.Errorf("failed to serialize message: %s", err)
+		return fmt.Errorf("failed to serialize message: %w", err)
 	}
 
 	apiURL := fmt.Sprintf("%s%s/%s", baseURL, t.token, methodSendMessage)
@@ -121,7 +121,7 @@ func (t *Telegram) sendMessage(msg SendMessageRequest) error {
 	resp, err := http.Post(apiURL, "application/json", bytes.NewReader(data))
 	if err != nil {
 		msgFailureCounter.Inc()
-		return fmt.Errorf("failed to send message: %s", err)
+		return fmt.Errorf("failed to send message: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -130,7 +130,7 @@ func (t *Telegram) sendMessage(msg SendMessageRequest) error {
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("failed to read response body: %s", err)
+			return fmt.Errorf("failed to read response body: %w", err)
 		}
 
 		return fmt.Errorf("failed to send message, status: %s, body: %s", resp.Status, string(body))
