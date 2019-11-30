@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -26,13 +27,6 @@ const (
 )
 
 var ErrNotFound = errors.New("not found")
-
-var (
-	pinCmdCounter     = metrics.NewCounter(`tg_command_total{command="pin"}`)
-	startCmdCounter   = metrics.NewCounter(`tg_command_total{command="start"}`)
-	helpCmdCounter    = metrics.NewCounter(`tg_command_total{command="help"}`)
-	unknownCmdCounter = metrics.NewCounter(`tg_command_total{command="unknown"}`)
-)
 
 type TokenDetails struct {
 	ID          int64
@@ -217,18 +211,18 @@ func (ls *LowStock) handleUpdate(ctx context.Context, msgUpdate MessengerUpdate)
 	log.Printf("Got command: %s", command)
 	ls.trackLastUpdateID(msgUpdate.ID)
 
+	userIDStr := strconv.FormatInt(msgUpdate.UserID, 10)
+	name := fmt.Sprintf(`tg_commands_total{command=%q, user_id=%q}`, command, userIDStr)
+	metrics.GetOrCreateCounter(name).Inc()
+
 	switch command {
 	case "/pin":
-		pinCmdCounter.Inc()
 		return ls.DoPin(ctx, msgUpdate)
 	case "/start":
-		startCmdCounter.Inc()
 		return ls.DoStart(ctx, msgUpdate)
 	case "/help":
-		helpCmdCounter.Inc()
 		return ls.DoHelp(ctx, msgUpdate)
 	default:
-		unknownCmdCounter.Inc()
 		log.Printf("Unsupported command: %s", command)
 		return nil
 	}
@@ -260,13 +254,11 @@ func (ls *LowStock) ListenAndServe(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			log.Print("Polling...")
 			msgUpdates, err := ls.messenger.Updates(ls.lastUpdateID + 1)
 			if err != nil {
 				log.Printf("Failed getting messenger msgUpdates: %s", err)
 				time.Sleep(fallbackTimeout)
 			}
-			log.Printf("Got %d messenger updates", len(msgUpdates))
 			ls.handleUpdates(ctx, msgUpdates)
 		}
 	}
