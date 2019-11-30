@@ -95,7 +95,7 @@ func (t *Telegram) Updates(lastMsgID int64) ([]lowstock.MessengerUpdate, error) 
 func (t *Telegram) sendMessage(m string, chatID int64, params url.Values) error {
 	apiURL := fmt.Sprintf("%s%s/%s", baseURL, t.token, methodSendMessage)
 
-	resp, err := http.DefaultClient.Get(apiURL + "?" + params.Encode())
+	resp, err := http.PostForm(apiURL, params)
 	if err != nil {
 		msgFailureCounter.Inc()
 		return fmt.Errorf("failed to send message: %s", err)
