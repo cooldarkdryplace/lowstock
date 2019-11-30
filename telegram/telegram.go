@@ -1,13 +1,12 @@
 package telegram
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/cooldarkdryplace/lowstock"
@@ -92,10 +91,34 @@ func (t *Telegram) Updates(lastMsgID int64) ([]lowstock.MessengerUpdate, error) 
 	return toMessengerUpdates(apiResponse.Updates), nil
 }
 
-func (t *Telegram) sendMessage(m string, chatID int64, params url.Values) error {
+type InlineKeyboardButton struct {
+	Text string `json:"text"`
+	URL  string `json:"url"`
+}
+
+type InlineKeyboardMarkup struct {
+	InlineKeyboard [][]InlineKeyboardButton `json:"inline_keyboard"`
+}
+
+type SendMessageRequest struct {
+	ChatID                int64                 `json:"chat_id"`
+	Text                  string                `json:"text"`
+	ParseMode             string                `json:"parse_mode"`
+	DisableWebPagePreview bool                  `json:"disable_web_page_preview"`
+	DisableNotification   bool                  `json:"disable_notification"`
+	ReplyToMessageID      *int64                `json:"reply_to_message_id,omitempty"`
+	ReplyMarkup           *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+}
+
+func (t *Telegram) sendMessage(msg SendMessageRequest) error {
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return fmt.Errorf("failed to serialize message: %s", err)
+	}
+
 	apiURL := fmt.Sprintf("%s%s/%s", baseURL, t.token, methodSendMessage)
 
-	resp, err := http.PostForm(apiURL, params)
+	resp, err := http.Post(apiURL, "application/json", bytes.NewReader(data))
 	if err != nil {
 		msgFailureCounter.Inc()
 		return fmt.Errorf("failed to send message: %s", err)
@@ -110,7 +133,7 @@ func (t *Telegram) sendMessage(m string, chatID int64, params url.Values) error 
 			return fmt.Errorf("failed to read response body: %s", err)
 		}
 
-		return fmt.Errorf("failed to send message, status: %s, chat: %d, body: %s", resp.Status, chatID, string(body))
+		return fmt.Errorf("failed to send message, status: %s, body: %s", resp.Status, string(body))
 	}
 
 	msgSuccessCounter.Inc()
@@ -119,47 +142,36 @@ func (t *Telegram) sendMessage(m string, chatID int64, params url.Values) error 
 }
 
 // SendTextMessage to the chat with provided ID.
-func (t *Telegram) SendTextMessage(m string, chatID int64) error {
-	params := url.Values{}
-	params.Set("chat_id", strconv.FormatInt(chatID, 10))
-	params.Set("text", m)
+func (t *Telegram) SendTextMessage(text string, chatID int64) error {
+	msg := SendMessageRequest{
+		ChatID:    chatID,
+		Text:      text,
+		ParseMode: "Markdown",
+	}
 
-	return t.sendMessage(m, chatID, params)
-}
-
-type InlineKeyboardButton struct {
-	Text string `json:"text"`
-	URL  string `json:"url"`
-}
-
-type InlineKeyboardMarkup struct {
-	InlineKeyboard [][]InlineKeyboardButton `json:"inline_keyboard"`
+	return t.sendMessage(msg)
 }
 
 func (t *Telegram) SendLoginURL(text, uri string, chatID int64) error {
-	params := url.Values{}
-	params.Set("chat_id", strconv.FormatInt(chatID, 10))
-	params.Set("text", text)
-
 	btn := InlineKeyboardButton{
 		Text: "Login to Etsy",
 		URL:  uri,
 	}
 
-	keyboard := InlineKeyboardMarkup{
+	keyboard := &InlineKeyboardMarkup{
 		InlineKeyboard: [][]InlineKeyboardButton{
 			[]InlineKeyboardButton{btn},
 		},
 	}
 
-	data, err := json.Marshal(keyboard)
-	if err != nil {
-		return fmt.Errorf("failed to serialize keyboard: %s", err)
+	msg := SendMessageRequest{
+		ChatID:      chatID,
+		Text:        text,
+		ParseMode:   "Markdown",
+		ReplyMarkup: keyboard,
 	}
 
-	params.Set("reply_markup", string(data))
-
-	return t.sendMessage(text, chatID, params)
+	return t.sendMessage(msg)
 }
 
 type Chat struct {
