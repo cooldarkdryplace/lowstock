@@ -1,0 +1,22 @@
+[Unit]
+Description=Lowstock Telegram bot
+After=syslog.target network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+User=lowstock
+Group=lowstock
+WorkingDirectory=/opt/lowstock/
+ExecStart=/opt/lowstock/lowstock
+
+Restart=always
+TimeoutStopSec=5
+
+Environment="PORT=9090"
+Environment="DOMAIN="
+Environment="TELEGRAM_TOKEN="
+Environment="ETSY_CONSUMER_KEY="
+Environment="ETSY_SHARED_SECRET="
+Environment="GOOGLE_APPLICATION_CREDENTIALS="
