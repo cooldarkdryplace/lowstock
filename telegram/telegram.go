@@ -25,11 +25,11 @@ const (
 )
 
 var (
-	updSuccessCounter = metrics.NewCounter(`tg_api_calls{status="success" method="getUpdates"}`)
-	updFailureCounter = metrics.NewCounter(`tg_api_calls{status="failure" method="getUpdates"}`)
+	updSuccessCounter = metrics.NewCounter(`tg_api_calls{status="success", method="getUpdates"}`)
+	updFailureCounter = metrics.NewCounter(`tg_api_calls{status="failure", method="getUpdates"}`)
 
-	msgSuccessCounter = metrics.NewCounter(`tg_api_calls{status="success" method="sendMessage"}`)
-	msgFailureCounter = metrics.NewCounter(`tg_api_calls{status="failure" method="sendMessage"}`)
+	msgSuccessCounter = metrics.NewCounter(`tg_api_calls{status="success", method="sendMessage"}`)
+	msgFailureCounter = metrics.NewCounter(`tg_api_calls{status="failure", method="sendMessage"}`)
 )
 
 type Telegram struct {
