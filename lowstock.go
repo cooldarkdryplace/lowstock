@@ -132,7 +132,6 @@ func (ls *LowStock) HandleEtsyUpdate(ctx context.Context, update Update) error {
 		}
 	default:
 		// noop
-		// increment metric counter
 	}
 
 	return nil
