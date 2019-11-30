@@ -207,7 +207,6 @@ func (ls *LowStock) DoHelp(ctx context.Context, msgUpdate MessengerUpdate) error
 
 func (ls *LowStock) handleUpdate(ctx context.Context, msgUpdate MessengerUpdate) error {
 	command := msgUpdate.Command
-	log.Printf("Got command: %s", command)
 	ls.trackLastUpdateID(msgUpdate.ID)
 
 	userIDStr := strconv.FormatInt(msgUpdate.UserID, 10)
@@ -239,7 +238,6 @@ func (ls *LowStock) handleUpdates(ctx context.Context, msgUpdates []MessengerUpd
 
 func (ls *LowStock) trackLastUpdateID(ID int64) {
 	ls.mu.Lock()
-	log.Printf("Last update ID: %d, incoming update ID: %d", ls.lastUpdateID, ID)
 	if ls.lastUpdateID < ID {
 		ls.lastUpdateID = ID
 	}

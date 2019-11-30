@@ -191,7 +191,6 @@ var (
 )
 
 func (e *EtsyClient) Updates(ctx context.Context) ([]lowstock.Update, error) {
-	fmt.Println("Getting Etsy updates...")
 	timeOffset := lastUpdateTSZ
 
 	params := url.Values{}
