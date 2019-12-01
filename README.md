@@ -1,8 +1,11 @@
 Low stock notifier
 ==================
 
-   * [Low stock notifier](#low-stock-notifier)
-      * [TL;DR](#tldr)
+## TL;DR
+
+You have an Etsy shop, and you do not want to miss when a listing goes out of stock?
+This Telegram bot will notify you when the product is sold out.
+
       * [How it works](#how-it-works)
          * [Listings Feed](#listings-feed)
          * [Storage](#storage)
@@ -13,11 +16,6 @@ Low stock notifier
          * [APIs access](#apis-access)
       * [Scaling](#scaling)
 
-
-## TL;DR
-
-You have an Etsy shop, and you do not want to miss when a listing goes out of stock?  
-This Telegram bot will notify you when the product is sold out.
 
 ## How it works
 Lowstok listens to all Etsy Listing updates by polling live feeds endpoint.
