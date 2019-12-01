@@ -168,10 +168,7 @@ func (ls *LowStock) DoPin(ctx context.Context, msgUpdate MessengerUpdate) error 
 		return fmt.Errorf("Failed to save user details: %w", err)
 	}
 
-	msg := `Success!
-You will be notified when products are sold out.`
-
-	if err := ls.messenger.SendTextMessage(msg, msgUpdate.ChatID); err != nil {
+	if err := ls.messenger.SendTextMessage(successMsg, msgUpdate.ChatID); err != nil {
 		return fmt.Errorf("failed to send notification: %w", err)
 	}
 
@@ -184,24 +181,7 @@ func (ls *LowStock) DoStart(ctx context.Context, msgUpdate MessengerUpdate) erro
 		return err
 	}
 
-	msg := `<b>Welcome to the Lowstock!</b>
-
-This bot keeps track of your Etsy listings and informs you when the listing is sold-out.
-Before you start getting notifications, you need to log in.
-This application will request read-only access to your shop information and your listings.
-This app stores a minimal amount of data needed for notification functionality: your Etsy user id and access token.
-
-After you have logged in into your Etsy account and authorized this app - you will get a one-time pin code.
-
-Please submit this code to this chat in a form:
-<code>/pin {pin code}</code>
-
-Example:
-<code>/pin 76279961</code>
-  
-<i>The term 'Etsy' is a trademark of Etsy, Inc. This application uses the Etsy API but is not endorsed or certified by Etsy, Inc.</i>`
-
-	if err := ls.messenger.SendLoginURL(msg, uri, msgUpdate.ChatID); err != nil {
+	if err := ls.messenger.SendLoginURL(startMsg, uri, msgUpdate.ChatID); err != nil {
 		return err
 	}
 
@@ -213,12 +193,7 @@ Example:
 }
 
 func (ls *LowStock) DoHelp(ctx context.Context, msgUpdate MessengerUpdate) error {
-	msg := `Supported commands:
-	/start - Login to your Etsy shop
-	/pin   - Submit login Pin
-	/help  - Send this message`
-
-	if err := ls.messenger.SendTextMessage(msg, msgUpdate.ChatID); err != nil {
+	if err := ls.messenger.SendTextMessage(helpMsg, msgUpdate.ChatID); err != nil {
 		fmt.Errorf("failed to send help instructions: %w", err)
 	}
 
