@@ -162,7 +162,6 @@ func toLowstockUpdate(l listingInfo) lowstock.Update {
 		State:           l.State,
 		Title:           l.Title,
 		ShopName:        l.Shop.Name,
-		ListingSKUs:     l.SKU,
 		ListingID:       l.ListingID,
 		UserID:          l.UserID,
 		Quantity:        l.Quantity,
@@ -189,6 +188,42 @@ var (
 	// TODO: use value from DB.
 	lastUpdateTSZ = strconv.FormatInt(time.Now().Unix(), 10)
 )
+
+func (e *EtsyClient) ListingSKUs(ctx context.Context, id int64, accessToken, accessSecret string) ([]string, error) {
+	httpClient := e.HTTPClient(accessToken, accessSecret)
+
+	uri := fmt.Sprintf("https://openapi.etsy.com/v2/listings/%d", id)
+
+	resp, err := httpClient.Get(uri)
+	if err != nil {
+		apiFailureCounter.Inc()
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		apiFailureCounter.Inc()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("bad response: %s, body: %s", resp.Status, string(body))
+	}
+
+	var listingsResp listingsResponse
+
+	if err := json.NewDecoder(resp.Body).Decode(&listingsResp); err != nil {
+		return nil, err
+	}
+
+	if len(listingsResp.Results) == 0 {
+		return nil, lowstock.ErrNotFound
+	}
+
+	return listingsResp.Results[0].SKU, nil
+}
 
 func (e *EtsyClient) Updates(ctx context.Context) ([]lowstock.Update, error) {
 	timeOffset := lastUpdateTSZ

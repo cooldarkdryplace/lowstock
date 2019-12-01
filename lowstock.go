@@ -48,6 +48,7 @@ type User struct {
 type Etsy interface {
 	Callback(ctx context.Context, pin, token, secret string) (TokenDetails, error)
 	Login(ctx context.Context, id int64) (string, TokenDetails, error)
+	ListingSKUs(ctx context.Context, id int64, accessToken, accessSecret string) ([]string, error)
 	UserID(accessToken, accessSecret string) (int64, error)
 	Updates(ctx context.Context) ([]Update, error)
 }
@@ -96,7 +97,6 @@ type Update struct {
 	State           string
 	Title           string
 	ShopName        string
-	ListingSKUs     []string
 	ListingID       int64
 	UserID          int64
 	Quantity        int64
@@ -129,8 +129,12 @@ func (ls *LowStock) HandleEtsyUpdate(ctx context.Context, update Update) error {
 			return nil
 		}
 
-		// TODO: request listing via API to get SKU.
-		msg := fmt.Sprintf("Low stock for SKU: %v, shop: %s", update.ListingSKUs, update.ShopName)
+		listingSKUs, err := ls.etsy.ListingSKUs(ctx, update.ListingID, user.Token, user.TokenSecret)
+		if err != nil {
+			return fmt.Errorf("failed to get Listing SKUs: %w", err)
+		}
+
+		msg := fmt.Sprintf("Low stock for SKU: %v, shop: %s", listingSKUs, update.ShopName)
 		if err := ls.messenger.SendTextMessage(msg, user.ChatID); err != nil {
 			return fmt.Errorf("failed to send message via messenger: %w", err)
 		}
