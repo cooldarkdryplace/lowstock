@@ -29,4 +29,15 @@ This bot is opensource. You can find <a href="https://github.com/cooldarkdryplac
 
 	successMsg = `Success!
 You will be notified when products are sold out.`
+
+	emptyPinMsg = `You have entered an empty Pin.
+
+Please submit pin to this chat in a form:
+<code>/pin {pin code}</code>
+
+Example:
+<code>/pin 76279961</code>
+
+If you need a new pin, please type /start and go through login procedure again.
+`
 )
