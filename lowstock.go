@@ -126,6 +126,7 @@ func (ls *LowStock) HandleEtsyUpdate(ctx context.Context, update Update) error {
 			return nil
 		}
 
+		// TODO: request listing via API to get SKU.
 		msg := fmt.Sprintf("Low stock for SKU: %v, shop: %s", update.ListingSKUs, update.ShopName)
 		if err := ls.messenger.SendTextMessage(msg, user.ChatID); err != nil {
 			return fmt.Errorf("failed to send message via messenger: %w", err)
@@ -138,7 +139,6 @@ func (ls *LowStock) HandleEtsyUpdate(ctx context.Context, update Update) error {
 }
 
 func (ls *LowStock) DoPin(ctx context.Context, msgUpdate MessengerUpdate) error {
-	log.Printf("PIN: %#v", msgUpdate)
 	details, err := ls.storage.TokenDetails(ctx, msgUpdate.UserID)
 	if err != nil {
 		return err
@@ -164,13 +164,13 @@ func (ls *LowStock) DoPin(ctx context.Context, msgUpdate MessengerUpdate) error 
 		TokenSecret: details.TokenSecret,
 	}
 
-	log.Printf("Saving user: %#v", user)
-
 	if err := ls.storage.SaveUser(ctx, user); err != nil {
 		return fmt.Errorf("Failed to save user details: %w", err)
 	}
 
-	msg := "Success! You will be notified when products are sold out."
+	msg := `Success!
+You will be notified when products are sold out.`
+
 	if err := ls.messenger.SendTextMessage(msg, msgUpdate.ChatID); err != nil {
 		return fmt.Errorf("failed to send notification: %w", err)
 	}
@@ -184,12 +184,22 @@ func (ls *LowStock) DoStart(ctx context.Context, msgUpdate MessengerUpdate) erro
 		return err
 	}
 
-	msg := `Welcome to the Lowstock!  
-This bot keeps track of your Etsy listings and informs you when listing is sold-out.  
-Before you will start getting notifications you need to login.  
-This application will request *read-only access* to your basic shop information and your listings.  
+	msg := `<b>Welcome to the Lowstock!</b>
+
+This bot keeps track of your Etsy listings and informs you when the listing is sold-out.
+Before you start getting notifications, you need to log in.
+This application will request read-only access to your shop information and your listings.
+This app stores a minimal amount of data needed for notification functionality: your Etsy user id and access token.
+
+After you have logged in into your Etsy account and authorized this app - you will get a one-time pin code.
+
+Please submit this code to this chat in a form:
+<code>/pin {pin code}</code>
+
+Example:
+<code>/pin 76279961</code>
   
-The term 'Etsy' is a trademark of Etsy, Inc. This application uses the Etsy API but is not endorsed or certified by Etsy, Inc.`
+<i>The term 'Etsy' is a trademark of Etsy, Inc. This application uses the Etsy API but is not endorsed or certified by Etsy, Inc.</i>`
 
 	if err := ls.messenger.SendLoginURL(msg, uri, msgUpdate.ChatID); err != nil {
 		return err
@@ -203,9 +213,9 @@ The term 'Etsy' is a trademark of Etsy, Inc. This application uses the Etsy API 
 }
 
 func (ls *LowStock) DoHelp(ctx context.Context, msgUpdate MessengerUpdate) error {
-	msg := `Supported commands:  
-	/start - Login to your Etsy shop  
-	/pin   - Submit Pin  
+	msg := `Supported commands:
+	/start - Login to your Etsy shop
+	/pin   - Submit login Pin
 	/help  - Send this message`
 
 	if err := ls.messenger.SendTextMessage(msg, msgUpdate.ChatID); err != nil {
