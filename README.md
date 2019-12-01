@@ -1,5 +1,4 @@
-Low stock notifier
-==================
+# Electric Borneo Cat - Low stock notifier
 
 ## TL;DR
 
