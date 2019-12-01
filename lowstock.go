@@ -26,7 +26,10 @@ const (
 	unavailable = "unavailable"
 )
 
-var ErrNotFound = errors.New("not found")
+var (
+	ErrNotFound = errors.New("not found")
+	ErrEmptyPin = errors.New("empty pin")
+)
 
 type TokenDetails struct {
 	ID          int64
@@ -145,6 +148,13 @@ func (ls *LowStock) DoPin(ctx context.Context, msgUpdate MessengerUpdate) error 
 	}
 
 	pin := strings.TrimSpace(strings.TrimPrefix(msgUpdate.Text, "/pin"))
+	if pin == "" {
+		if err := ls.messenger.SendTextMessage(emptyPinMsg, msgUpdate.ChatID); err != nil {
+			return fmt.Errorf("failed to send empty pin notification: %w", err)
+		}
+
+		return ErrEmptyPin
+	}
 
 	details, err = ls.etsy.Callback(ctx, pin, details.Token, details.TokenSecret)
 	if err != nil {
