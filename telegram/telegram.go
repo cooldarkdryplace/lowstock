@@ -146,7 +146,7 @@ func (t *Telegram) SendTextMessage(text string, chatID int64) error {
 	msg := SendMessageRequest{
 		ChatID:    chatID,
 		Text:      text,
-		ParseMode: "Markdown",
+		ParseMode: "HTML",
 	}
 
 	return t.sendMessage(msg)
@@ -167,7 +167,7 @@ func (t *Telegram) SendLoginURL(text, uri string, chatID int64) error {
 	msg := SendMessageRequest{
 		ChatID:      chatID,
 		Text:        text,
-		ParseMode:   "Markdown",
+		ParseMode:   "HTML",
 		ReplyMarkup: keyboard,
 	}
 
