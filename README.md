@@ -1,6 +1,19 @@
 Low stock notifier
 ==================
 
+   * [Low stock notifier](#low-stock-notifier)
+      * [TL;DR](#tldr)
+      * [How it works](#how-it-works)
+         * [Listings Feed](#listings-feed)
+         * [Storage](#storage)
+         * [Registered users](#registered-users)
+         * [Notifications](#notifications)
+            * [Telegram](#telegram)
+      * [Deployment](#deployment)
+         * [APIs access](#apis-access)
+      * [Scaling](#scaling)
+
+
 ## TL;DR
 
 You have an Etsy shop, and you do not want to miss when a listing goes out of stock?  
