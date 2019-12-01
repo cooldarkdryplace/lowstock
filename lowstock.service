@@ -14,9 +14,7 @@ ExecStart=/opt/lowstock/lowstock
 Restart=always
 TimeoutStopSec=5
 
-Environment="PORT=9090"
-Environment="DOMAIN="
+Environment="DATABASE_FILE="
 Environment="TELEGRAM_TOKEN="
 Environment="ETSY_CONSUMER_KEY="
 Environment="ETSY_SHARED_SECRET="
-Environment="GOOGLE_APPLICATION_CREDENTIALS="
