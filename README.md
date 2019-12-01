@@ -5,6 +5,7 @@
 You have an Etsy shop, and you do not want to miss when a listing goes out of stock?
 This Telegram bot will notify you when the product is sold out.
 
+  * [Installation](#installation)
   * [How it works](#how-it-works)
      * [Listings Feed](#listings-feed)
      * [Storage](#storage)
@@ -14,6 +15,11 @@ This Telegram bot will notify you when the product is sold out.
   * [Deployment](#deployment)
      * [APIs access](#apis-access)
   * [Scaling](#scaling)
+
+## Installation
+Start a conversation with [@lowstockbot](https://telegram.me/lowstockbot) on Telegram. You will immediately get a response with the introduction and invitation to login to Etsy. 
+Once you have approved the requested access, you will get a pin that you should post back to the chat in a format: `/pin {one time pin}`.
+The bot will validate your pin, and if everything is fine, you will get a confirmation that from now on, a message will be sent to notify you if listing in your shop is out of stock.
 
 ## How it works
 Lowstok listens to all Etsy Listing updates by polling live feeds endpoint.
