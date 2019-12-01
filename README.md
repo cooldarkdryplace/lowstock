@@ -17,9 +17,10 @@ This Telegram bot will notify you when the product is sold out.
   * [Scaling](#scaling)
 
 ## Installation
-Start a conversation with [@lowstockbot](https://telegram.me/lowstockbot) on Telegram. You will immediately get a response with the introduction and invitation to login to Etsy. 
-Once you have approved the requested access, you will get a pin that you should post back to the chat in a format: `/pin {one time pin}`.
-The bot will validate your pin, and if everything is fine, you will get a confirmation that from now on, a message will be sent to notify you if listing in your shop is out of stock.
+Start a conversation with [@lowstockbot](https://telegram.me/lowstockbot) on Telegram. You will immediately get a response with the introduction and invitation to login to Etsy.   
+Once you have approved the requested access, you will get a pin that you should post back to the chat in a format: `/pin {one time pin}`.  
+The bot will validate your pin, and if everything is fine, you will get a confirmation that from now on, a message will be sent to notify you if listing in your shop is out of stock.  
+For help use `/help` command.
 
 ## How it works
 Lowstok listens to all Etsy Listing updates by polling live feeds endpoint.
@@ -53,12 +54,12 @@ It is also ok to run this bot in Docker, but you will need to write a Dockerfile
 Lowstock needs access to Etsy Feeds, Etsy Open API, and Telegram Bot API to work.
 Once you provision API credentials, you will need to provide them to the bot via environment variables.
 
-| Name               | Description                                                     |
-|--------------------|-----------------------------------------------------------------|
-| DATABASE_FILE      | BoltDB database file                                            |
-| TELEGRAM_TOKEN     | Telegram Bot token                                              |
-| ETSY_CONSUMER_KEY  | Etsy key is used to perform calls to Etsy Open API              |
-| ETSY_SHARED_SECRET | Etsy secret is used in combination with the key to do OAuth v1  |
+| Name                 | Description                                                     |
+|----------------------|-----------------------------------------------------------------|
+| `DATABASE_FILE`      | BoltDB database file                                            |
+| `TELEGRAM_TOKEN`     | Telegram Bot token                                              |
+| `ETSY_CONSUMER_KEY`  | Etsy key is used to perform calls to Etsy Open API              |
+| `ETSY_SHARED_SECRET` | Etsy secret is used in combination with the key to do OAuth v1  |
 
 ## Scaling
 With the current number of listing updates per minute, you do not need more than one worker.
