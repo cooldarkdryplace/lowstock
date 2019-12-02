@@ -40,7 +40,13 @@ func TestStoredUserCanBeRead(t *testing.T) {
 	}
 	defer db.Close()
 
-	expectedUser := User{}
+	expectedUser := User{
+		EtsyUserID:  1234,
+		ChatUserID:  4321,
+		ChatID:      9876,
+		Token:       "test_token",
+		TokenSecret: "test_secret",
+	}
 
 	ctx := context.Background()
 	if err := db.SaveUser(ctx, expectedUser); err != nil {
@@ -88,7 +94,11 @@ func TestStoredTokenDetailsCanBeRead(t *testing.T) {
 	}
 	defer db.Close()
 
-	expectedDetails := TokenDetails{}
+	expectedDetails := TokenDetails{
+		ID:          10000,
+		Token:       "test_tmp_token",
+		TokenSecret: "test_tmp_secret",
+	}
 
 	ctx := context.Background()
 	if err := db.SaveTokenDetails(ctx, expectedDetails); err != nil {
