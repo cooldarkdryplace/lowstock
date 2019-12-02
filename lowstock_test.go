@@ -3,9 +3,114 @@ package lowstock
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 )
+
+func TestHandleEtsyUpdate(t *testing.T) {
+	var (
+		expectedChatID     int64 = 100500
+		expectedUserID     int64 = 9500
+		expectedEtsyUserID int64 = 5432
+		expectedToken            = "test_token"
+		expectedSecret           = "test_secret"
+	)
+
+	storage := &StorageMock{
+		UserFunc: func(ctx context.Context, etsyUserID int64) (User, error) {
+			return User{
+				EtsyUserID:  expectedEtsyUserID,
+				ChatUserID:  expectedUserID,
+				ChatID:      expectedChatID,
+				Token:       expectedToken,
+				TokenSecret: expectedSecret,
+			}, nil
+		},
+	}
+
+	etsy := &EtsyMock{
+		ListingSKUsFunc: func(ctx context.Context, id int64, accessToken, accessSecret string) ([]string, error) {
+			return []string{"TestSKU#1", "TestSKU#2"}, nil
+		},
+	}
+
+	messenger := &MessengerMock{
+		SendTextMessageFunc: func(msg string, chatID int64) error {
+			if chatID != expectedChatID {
+				t.Errorf("Got chat ID: %d, expected: %d", chatID, expectedChatID)
+			}
+
+			return nil
+		},
+	}
+
+	ls := New(etsy, messenger, storage)
+
+	update := Update{
+		State:           soldOut,
+		Title:           "Test product",
+		ShopName:        "Test shop",
+		ListingID:       42,
+		UserID:          123456,
+		Quantity:        0,
+		CreationTSZ:     time.Now().Add(-24 * time.Hour).Unix(),
+		LastModifiedTSZ: time.Now().Unix(),
+	}
+
+	if err := ls.HandleEtsyUpdate(context.Background(), update); err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+}
+
+func TestHandleEtsyUpdateUnsupportedState(t *testing.T) {
+	states := []string{active, expired, removed, edit, vacation, private, unavailable}
+
+	var (
+		storage   = &StorageMock{}
+		messenger = &MessengerMock{}
+		etsy      = &EtsyMock{}
+	)
+
+	ls := New(etsy, messenger, storage)
+
+	for _, state := range states {
+		t.Run(state, func(t *testing.T) {
+			update := Update{State: state}
+			if err := ls.HandleEtsyUpdate(context.Background(), update); err != nil {
+				t.Fatalf("Unexpected error: %s", err)
+			}
+		})
+	}
+}
+
+func TestHandleEtsyUpdateUnknownUserID(t *testing.T) {
+	storage := &StorageMock{
+		UserFunc: func(ctx context.Context, etsyUserID int64) (User, error) {
+			return User{}, ErrNotFound
+		},
+	}
+
+	messenger := &MessengerMock{}
+	etsy := &EtsyMock{}
+
+	ls := New(etsy, messenger, storage)
+
+	update := Update{
+		State:           soldOut,
+		Title:           "Test product",
+		ShopName:        "Test shop",
+		ListingID:       42,
+		UserID:          123456,
+		Quantity:        0,
+		CreationTSZ:     time.Now().Add(-24 * time.Hour).Unix(),
+		LastModifiedTSZ: time.Now().Unix(),
+	}
+
+	if err := ls.HandleEtsyUpdate(context.Background(), update); err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+}
 
 func TestDoPin(t *testing.T) {
 	var (
@@ -96,11 +201,101 @@ func TestDoPin(t *testing.T) {
 	}
 }
 
+func TestDoHelp(t *testing.T) {
+	var expectedChatID int64 = 42
+
+	etsy := &EtsyMock{}
+	storage := &StorageMock{}
+
+	messageSent := false
+
+	messenger := &MessengerMock{
+		SendTextMessageFunc: func(msg string, chatID int64) error {
+			if chatID != expectedChatID {
+				t.Errorf("Got chat ID: %d, expected: %d", chatID, expectedChatID)
+			}
+
+			messageSent = true
+
+			return nil
+		},
+	}
+
+	ls := New(etsy, messenger, storage)
+
+	update := MessengerUpdate{ChatID: expectedChatID}
+
+	if err := ls.DoHelp(context.Background(), update); err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	if !messageSent {
+		t.Error("Help message was not sent")
+	}
+}
+
+func TestDoStart(t *testing.T) {
+	var (
+		expectedURL           = "https://example.com/login"
+		expectedChatID  int64 = 42
+		expectedDetails       = TokenDetails{
+			Token:       "test_token",
+			TokenSecret: "test_secret",
+		}
+	)
+
+	storage := &StorageMock{
+		SaveTokenDetailsFunc: func(ctx context.Context, td TokenDetails) error {
+			if diff := cmp.Diff(expectedDetails, td); diff != "" {
+				t.Errorf("Different TokenDetails:\n%s", diff)
+			}
+
+			return nil
+		},
+	}
+
+	loginURLSent := false
+	messenger := &MessengerMock{
+		SendLoginURLFunc: func(text, url string, chatID int64) error {
+			loginURLSent = true
+
+			if chatID != expectedChatID {
+				t.Errorf("Got chat ID: %d, expected: %d", chatID, expectedChatID)
+			}
+
+			if url != expectedURL {
+				t.Errorf("Got login URL: %s, expected: %s", url, expectedURL)
+			}
+
+			return nil
+		},
+	}
+
+	etsy := &EtsyMock{
+		LoginFunc: func(ctx context.Context, id int64) (string, TokenDetails, error) {
+			return expectedURL, expectedDetails, nil
+		},
+	}
+
+	ls := New(etsy, messenger, storage)
+
+	update := MessengerUpdate{ChatID: expectedChatID}
+
+	if err := ls.DoStart(context.Background(), update); err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	if !loginURLSent {
+		t.Error("Login URL was not sent")
+	}
+}
+
 type EtsyMock struct {
-	CallbackFunc func(ctx context.Context, pin, token, secret string) (TokenDetails, error)
-	LoginFunc    func(ctx context.Context, id int64) (string, TokenDetails, error)
-	UserIDFunc   func(accessToken, accessSecret string) (int64, error)
-	UpdatesFunc  func(ctx context.Context) ([]Update, error)
+	CallbackFunc    func(ctx context.Context, pin, token, secret string) (TokenDetails, error)
+	LoginFunc       func(ctx context.Context, id int64) (string, TokenDetails, error)
+	ListingSKUsFunc func(ctx context.Context, id int64, accessToken, accessSecret string) ([]string, error)
+	UserIDFunc      func(accessToken, accessSecret string) (int64, error)
+	UpdatesFunc     func(ctx context.Context) ([]Update, error)
 }
 
 func (e *EtsyMock) Callback(ctx context.Context, pin, token, secret string) (TokenDetails, error) {
@@ -109,6 +304,10 @@ func (e *EtsyMock) Callback(ctx context.Context, pin, token, secret string) (Tok
 
 func (e *EtsyMock) Login(ctx context.Context, id int64) (string, TokenDetails, error) {
 	return e.LoginFunc(ctx, id)
+}
+
+func (e *EtsyMock) ListingSKUs(ctx context.Context, id int64, accessToken, accessSecret string) ([]string, error) {
+	return e.ListingSKUsFunc(ctx, id, accessToken, accessSecret)
 }
 
 func (e *EtsyMock) UserID(accessToken, accessSecret string) (int64, error) {
