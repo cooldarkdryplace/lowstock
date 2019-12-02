@@ -9,6 +9,27 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func TestUnknownUserReturnsNotFound(t *testing.T) {
+	var (
+		unknownID     int64 = -100000
+		expectedError       = ErrNotFound
+	)
+
+	dbFile := filepath.Join(os.TempDir(), "lowstock_test_user_nf.db")
+	defer os.Remove(dbFile)
+
+	db, err := NewBoltStorage(dbFile)
+	if err != nil {
+		t.Fatalf("Failed to init DB: %s", err)
+	}
+	defer db.Close()
+
+	ctx := context.Background()
+	if _, err := db.User(ctx, unknownID); err != expectedError {
+		t.Errorf("Got error: %v, expected: %v", err, ErrNotFound)
+	}
+}
+
 func TestStoredUserCanBeRead(t *testing.T) {
 	dbFile := filepath.Join(os.TempDir(), "lowstock_test_users.db")
 	defer os.Remove(dbFile)
@@ -33,6 +54,27 @@ func TestStoredUserCanBeRead(t *testing.T) {
 
 	if diff := cmp.Diff(actualUser, expectedUser); diff != "" {
 		t.Errorf("Users are different:\n%s", diff)
+	}
+}
+
+func TestUnknownTokenDetailsReturnNotFound(t *testing.T) {
+	var (
+		unknownID     int64 = -100000
+		expectedError       = ErrNotFound
+	)
+
+	dbFile := filepath.Join(os.TempDir(), "lowstock_test_td_nf.db")
+	defer os.Remove(dbFile)
+
+	db, err := NewBoltStorage(dbFile)
+	if err != nil {
+		t.Fatalf("Failed to init DB: %s", err)
+	}
+	defer db.Close()
+
+	ctx := context.Background()
+	if _, err := db.TokenDetails(ctx, unknownID); err != expectedError {
+		t.Errorf("Got error: %v, expected: %v", err, ErrNotFound)
 	}
 }
 
