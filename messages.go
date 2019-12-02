@@ -25,7 +25,8 @@ Example:
 Type /help to get the list of commands, or check the <a href="">online documentation</a>.
 
 This bot is opensource. You can find <a href="https://github.com/cooldarkdryplace/lowstock">source code</a> on Github.
-<i>The term 'Etsy' is a trademark of Etsy, Inc. This application uses the Etsy API but is not endorsed or certified by Etsy, Inc.</i>`
+
+<i>* The term 'Etsy' is a trademark of Etsy, Inc. This application uses the Etsy API but is not endorsed or certified by Etsy, Inc.</i>`
 
 	successMsg = `Success!
 You will be notified when products are sold out.`
