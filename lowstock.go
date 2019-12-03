@@ -146,11 +146,6 @@ func (ls *LowStock) HandleEtsyUpdate(ctx context.Context, update Update) error {
 }
 
 func (ls *LowStock) DoPin(ctx context.Context, msgUpdate MessengerUpdate) error {
-	details, err := ls.storage.TokenDetails(ctx, msgUpdate.UserID)
-	if err != nil {
-		return err
-	}
-
 	pin := strings.TrimSpace(strings.TrimPrefix(msgUpdate.Text, "/pin"))
 	if pin == "" {
 		if err := ls.messenger.SendTextMessage(emptyPinMsg, msgUpdate.ChatID); err != nil {
@@ -158,6 +153,11 @@ func (ls *LowStock) DoPin(ctx context.Context, msgUpdate MessengerUpdate) error 
 		}
 
 		return ErrEmptyPin
+	}
+
+	details, err := ls.storage.TokenDetails(ctx, msgUpdate.UserID)
+	if err != nil {
+		return err
 	}
 
 	details, err = ls.etsy.Callback(ctx, pin, details.Token, details.TokenSecret)
