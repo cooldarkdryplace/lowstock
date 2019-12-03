@@ -2,11 +2,36 @@ package lowstock
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 )
+
+func TestUpdates(t *testing.T) {
+	etsyUpdates := []Update{
+		Update{State: soldOut},
+		Update{State: expired},
+	}
+
+	etsy := &EtsyMock{
+		UpdatesFunc: func(ctx context.Context) ([]Update, error) {
+			return etsyUpdates, nil
+		},
+	}
+
+	ls := New(etsy, nil, nil)
+
+	actualUpdates, err := ls.Updates(context.Background())
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	if diff := cmp.Diff(actualUpdates, etsyUpdates); diff != "" {
+		t.Errorf("Updates dot not match:\n%s", diff)
+	}
+}
 
 func TestHandleEtsyUpdate(t *testing.T) {
 	var (
@@ -112,6 +137,51 @@ func TestHandleEtsyUpdateUnknownUserID(t *testing.T) {
 	}
 }
 
+func TestDoEmptyPin(t *testing.T) {
+	var (
+		expectedChatID int64 = 100500
+		expectedUserID int64 = 9500
+		expectedError        = ErrEmptyPin
+	)
+
+	storage := &StorageMock{}
+	etsy := &EtsyMock{}
+
+	messageSent := false
+	messenger := &MessengerMock{
+		SendTextMessageFunc: func(msg string, chatID int64) error {
+			if msg != emptyPinMsg {
+				t.Error("Unexpected message")
+			}
+
+			if chatID != expectedChatID {
+				t.Errorf("Got chat ID: %d, expected: %d", chatID, expectedChatID)
+			}
+
+			messageSent = true
+			return nil
+		},
+	}
+
+	ls := New(etsy, messenger, storage)
+
+	update := MessengerUpdate{
+		Command: "/pin",
+		Text:    "/pin ",
+		ChatID:  expectedChatID,
+		UserID:  expectedUserID,
+	}
+
+	err := ls.DoPin(context.Background(), update)
+	if !errors.Is(err, expectedError) {
+		t.Errorf("Got error: %v, expected error: %s", err, expectedError)
+	}
+
+	if !messageSent {
+		t.Error("Response message was not sent")
+	}
+}
+
 func TestDoPin(t *testing.T) {
 	var (
 		expectedPin              = "42"
@@ -154,6 +224,10 @@ func TestDoPin(t *testing.T) {
 
 	messenger := &MessengerMock{
 		SendTextMessageFunc: func(msg string, chatID int64) error {
+			if msg != successMsg {
+				t.Error("Unexpected message")
+			}
+
 			if chatID != expectedChatID {
 				t.Errorf("Got chat ID: %d, expected: %d", chatID, expectedChatID)
 			}
@@ -211,6 +285,10 @@ func TestDoHelp(t *testing.T) {
 
 	messenger := &MessengerMock{
 		SendTextMessageFunc: func(msg string, chatID int64) error {
+			if msg != helpMsg {
+				t.Error("Unexpected message")
+			}
+
 			if chatID != expectedChatID {
 				t.Errorf("Got chat ID: %d, expected: %d", chatID, expectedChatID)
 			}
@@ -256,8 +334,12 @@ func TestDoStart(t *testing.T) {
 
 	loginURLSent := false
 	messenger := &MessengerMock{
-		SendLoginURLFunc: func(text, url string, chatID int64) error {
+		SendLoginURLFunc: func(msg, url string, chatID int64) error {
 			loginURLSent = true
+
+			if msg != startMsg {
+				t.Error("Unexpected message")
+			}
 
 			if chatID != expectedChatID {
 				t.Errorf("Got chat ID: %d, expected: %d", chatID, expectedChatID)
