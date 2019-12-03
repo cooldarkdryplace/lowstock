@@ -41,7 +41,6 @@ func (w *Worker) handleUpdates(ctx context.Context) {
 func (w *Worker) etsyUpdates(ctx context.Context) {
 	updates, err := w.ls.Updates(ctx)
 	if err != nil {
-		log.Printf("Failed to handle updates: %s", err)
 		return
 	}
 
