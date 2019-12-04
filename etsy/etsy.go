@@ -21,6 +21,9 @@ var (
 	feedSuccessCounter = metrics.NewCounter(`etsy_feeds_api_calls{status="success"}`)
 	feedFailureCounter = metrics.NewCounter(`etsy_feeds_api_calls{status="failure"}`)
 
+	feedListingsCounter    = metrics.NewCounter(`etsy_feeds_listings_total`)
+	multipageUpdateCounter = metrics.NewCounter(`etsy_feeds_multipage_updates`)
+
 	apiSuccessCounter = metrics.NewCounter(`etsy_open_api_calls{status="success"}`)
 	apiFailureCounter = metrics.NewCounter(`etsy_open_api_calls{status="failure"}`)
 )
@@ -181,7 +184,8 @@ func toLowstockUpdates(listings []listingInfo) []lowstock.Update {
 }
 
 var (
-	limit     = "100"
+	limitInt  = 100
+	limit     = strconv.Itoa(limitInt)
 	offset    = "0"
 	timeLimit = "10"
 
@@ -259,11 +263,17 @@ func (e *EtsyClient) Updates(ctx context.Context) ([]lowstock.Update, error) {
 		return nil, fmt.Errorf("failed to decode feeds response: %w", err)
 	}
 
-	feedSuccessCounter.Inc()
+	feedListingsCounter.Add(lResp.Count)
+
+	if lResp.Count > limitInt {
+		multipageUpdateCounter.Inc()
+	}
 
 	updates := toLowstockUpdates(lResp.Results)
 	// TODO: update in DB
 	lastUpdateTSZ = strconv.FormatInt(time.Now().Unix(), 10)
+
+	feedSuccessCounter.Inc()
 
 	return updates, nil
 }
