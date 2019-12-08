@@ -17,13 +17,33 @@ This Telegram bot will notify you when the product is sold out.
   * [Scaling](#scaling)
 
 ## Start bot
-Start a conversation with [@lowstockbot](https://telegram.me/lowstockbot) on Telegram. You will immediately get a response with the introduction and invitation to login to Etsy.   
-Once you have approved the requested access, you will get a pin that you should post back to the chat in a format: 
+Start a conversation with [@lowstockbot](https://telegram.me/lowstockbot) on Telegram. You will immediately get a response with the introduction and invitation to login to Etsy.  
+![Start Lowstock Bot](https://storage.googleapis.com/lowstock/1_start_bot.jpg)
+
+Follow the link.
+![Follow the link](https://storage.googleapis.com/lowstock/2_login_url.jpg)
+
+Etsy will ask you if it is ok to read your listings.
+![Check permissions](https://storage.googleapis.com/lowstock/3_etsy_auth.jpg)
+
+Once you have approved the requested access, you will get a pin. 
+![Etsy pin](https://storage.googleapis.com/lowstock/4_one_time_pin.jpg)
+
+Copy the pin.
+![Copy pin](https://storage.googleapis.com/lowstock/5_copy_pin.jpg)
+
+Post the pin back to the chat.
+![Paste pin](https://storage.googleapis.com/lowstock/6_paste_pin.jpg)
+
+Bot expects this format: 
 ```
 /pin {one time pin}
 ```  
+![Pasted pin](https://storage.googleapis.com/lowstock/7_pasted_pin.jpg)
 
 The bot will validate your pin, and if everything is fine, you will get a confirmation that from now on, a message will be sent to notify you if listing in your shop is out of stock.  
+![Success](https://storage.googleapis.com/lowstock/8_success.jpg)
+
 For help use `/help` command.
 
 ## How it works
