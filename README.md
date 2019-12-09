@@ -1,5 +1,8 @@
 # Electric Borneo Cat - Low stock notifier
 
+Disclaimer:
+The term 'Etsy' is a trademark of Etsy, Inc. This application uses the Etsy API but is not endorsed or certified by Etsy, Inc.
+
 ## TL;DR
 
 You have an Etsy shop, and you do not want to miss when a listing goes out of stock?
@@ -18,33 +21,41 @@ This Telegram bot will notify you when the product is sold out.
 
 ## Start bot
 Start a conversation with [@lowstockbot](https://telegram.me/lowstockbot) on Telegram. You will immediately get a response with the introduction and invitation to login to Etsy.  
-![Start Lowstock Bot](https://storage.googleapis.com/lowstock/1_start_bot.jpg)
 
-Follow the link.
-![Follow the link](https://storage.googleapis.com/lowstock/2_login_url.jpg)
+![Start Lowstock Bot](https://storage.googleapis.com/lowstock/1_start_bot.jpg)  
 
-Etsy will ask you if it is ok to read your listings.
-![Check permissions](https://storage.googleapis.com/lowstock/3_etsy_auth.jpg)
+Follow the link.  
 
-Once you have approved the requested access, you will get a pin. 
-![Etsy pin](https://storage.googleapis.com/lowstock/4_one_time_pin.jpg)
+![Follow the link](https://storage.googleapis.com/lowstock/2_login_url.jpg)  
 
-Copy the pin.
-![Copy pin](https://storage.googleapis.com/lowstock/5_copy_pin.jpg)
+Etsy will ask you if it is ok to read your listings.  
 
-Post the pin back to the chat.
-![Paste pin](https://storage.googleapis.com/lowstock/6_paste_pin.jpg)
+![Check permissions](https://storage.googleapis.com/lowstock/3_etsy_auth.jpg)  
 
-Bot expects this format: 
+Once you have approved the requested access, you will get a pin.  
+
+![Etsy pin](https://storage.googleapis.com/lowstock/4_one_time_pin.jpg)  
+
+Copy the pin.  
+
+![Copy pin](https://storage.googleapis.com/lowstock/5_copy_pin.jpg)  
+
+Post the pin back to the chat.  
+
+![Paste pin](https://storage.googleapis.com/lowstock/6_paste_pin.jpg)  
+
+Bot expects this format:  
 ```
 /pin {one time pin}
 ```  
-![Pasted pin](https://storage.googleapis.com/lowstock/7_pasted_pin.jpg)
+
+![Pasted pin](https://storage.googleapis.com/lowstock/7_pasted_pin.jpg)  
 
 The bot will validate your pin, and if everything is fine, you will get a confirmation that from now on, a message will be sent to notify you if listing in your shop is out of stock.  
-![Success](https://storage.googleapis.com/lowstock/8_success.jpg)
 
-For help use `/help` command.
+![Success](https://storage.googleapis.com/lowstock/8_success.jpg)  
+
+For help use `/help` command.  
 
 ## How it works
 Lowstok listens to all Etsy Listing updates by polling live feeds endpoint.
